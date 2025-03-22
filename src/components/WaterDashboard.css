@@ -163,45 +163,142 @@
   }
   
   /* Tabla de datos */
-  .table-container {
-    background-color: var(--card-bg);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  
+  /* .table-container { */
+    /* background-color: var(--card-bg); */
+    /* border-radius: 8px; */
+    /* overflow: hidden; */
+  /* } */
+  /*  */
+  /* .data-table { */
+    /* width: 100%; */
+    /* border-collapse: collapse; */
+  /* } */
+  /*  */
+  /* .data-table th { */
+    /* padding: 12px 16px; */
+    /* text-align: left; */
+    /* font-size: 0.75rem; */
+    /* font-weight: 500; */
+    /* text-transform: uppercase; */
+    /* color: var(--text-secondary); */
+    /* border-bottom: 1px solid var(--border-color); */
+  /* } */
+  /*  */
+  /* .data-table td { */
+    /* padding: 12px 16px; */
+    /* font-size: 0.875rem; */
+    /* border-bottom: 1px solid var(--border-color); */
+  /* } */
+  /*  */
+  /* .date-cell { */
+    /* color: var(--highlight-color); */
+  /* } */
+  /*  */
+  /* .with-icon { */
+    /* display: flex; */
+    /* align-items: center; */
+    /* gap: 4px; */
+  /* } */
+  /*  */
+  /* .sort-icon { */
+    /* width: 16px; */
+    /* height: 16px; */
+    /* display: inline-block; */
+  /* } */
+
+  /* Estilos generales para las tablas */
+.table-container {
+  margin: 20px 0;
+  overflow-x: auto; /* Para hacer la tabla responsive */
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.data-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+}
+
+.data-table td {
+  color: #555;
+}
+
+.data-table tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Eliminar iconos desplegables */
+.data-table .with-icon svg {
+  display: none;
+}
+
+/* Estilos para la celda de fecha */
+.date-cell {
+  white-space: nowrap;
+}
+
+/* Estilos para el título de la tabla */
+.table-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+/* Estilos para hacer la tabla responsive */
+@media (max-width: 768px) {
   .data-table {
-    width: 100%;
-    border-collapse: collapse;
+    display: block;
+    overflow-x: auto;
   }
-  
-  .data-table th {
-    padding: 12px 16px;
-    text-align: left;
-    font-size: 0.75rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-    border-bottom: 1px solid var(--border-color);
-  }
-  
+
+  .data-table th,
   .data-table td {
-    padding: 12px 16px;
-    font-size: 0.875rem;
-    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
   }
-  
-  .date-cell {
-    color: var(--highlight-color);
-  }
-  
-  .with-icon {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-  
-  .sort-icon {
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-  }
+}
+
+/* Estilos para los controles de paginación */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.pagination-controls button {
+  background-color: #4ade80;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  margin: 0 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.pagination-controls button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.pagination-controls span {
+  font-size: 14px;
+  color: #333;
+}

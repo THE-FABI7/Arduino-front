@@ -1,34 +1,109 @@
-import React, { useState } from 'react';
-import './WaterDashboard.css'; // Asegúrate de crear este archivo CSS
+import React, { useState, useEffect } from 'react';
+import './WaterDashboard.css';
+import { getEstadisticas, getHistorial, getTendencias } from './Api'; // Asegúrate de que la ruta sea correcta
 
 const WaterManagementDashboard = () => {
-  // Estado para almacenar datos de ejemplo
-  const [currentDate] = useState("Marzo 22 2025 10:00 - Ahora");
+  const [currentDate, setCurrentDate ] = useState(new Date().toLocaleString());
   const [currentSystem] = useState("Red de Distribución Zona Norte");
-  
-  // Datos de ejemplo para el monitoreo de agua
-  const metrics = [
-    { id: 1, label: "Eficiencia", value: "72.3%", color: "#4ade80" },
-    { id: 2, label: "Calidad", value: "96.5%", color: "#4ade80" },
-    { id: 3, label: "Disponibilidad", value: "81.2%", color: "#4ade80" },
-    { id: 4, label: "Sostenibilidad", value: "68.7%", color: "#4ade80" },
-  ];
-  
-  // Datos para el mapa de consumo energético
-  const consumptionData = [
-    { id: 1, area: "Planta Principal", value: 78.59, x: 50, y: 30 },
-    { id: 2, area: "Bomba 1", value: 91.64, x: 35, y: 65 },
-    { id: 3, area: "Estación Purificadora", value: 16.1, x: 70, y: 40 },
-    { id: 4, area: "Distribución", value: 15.76, x: 20, y: 40 },
-    { id: 5, area: "Filtros", value: 14.97, x: 50, y: 70 },
-  ];
+  const [metrics, setMetrics] = useState([]);
+  const [tableData, setTableData] = useState([]);
+  const [tendencias, setTendencias] = useState([]);
+  const [consumptionData, setConsumptionData] = useState([]);
+  const [rendimientoData, setRendimientoData] = useState({});
 
-  // Datos de la tabla
-  const tableData = [
-    { date: "2025-03-22 10:00", pumpSpeed: 282, pumpMax: 325, flowRate: 54, flowMax: 79, efficiency: "102%" },
-    { date: "2025-03-22 09:00", pumpSpeed: 181, pumpMax: 329, flowRate: 32, flowMax: 100, efficiency: "99%" },
-    { date: "2025-03-22 08:00", pumpSpeed: 89, pumpMax: 322, flowRate: 33, flowMax: 103, efficiency: "95%" },
-  ];
+  // Estados para la paginación
+  const [currentPageHistorial, setCurrentPageHistorial] = useState(1);
+  const [currentPageTendencias, setCurrentPageTendencias] = useState(1);
+  const itemsPerPage = 10; // Número de registros por página
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const estadisticas = await getEstadisticas();
+      const historial = await getHistorial();
+      const tendenciasData = await getTendencias();
+
+      if (estadisticas) {
+        setMetrics([
+          { id: 1, label: "Flujo Promedio", value: `${estadisticas.flujo_promedio}%`, color: "#4ade80" },
+          { id: 2, label: "Flujo Máximo", value: `${estadisticas.flujo_maximo}%`, color: "#4ade80" },
+          { id: 3, label: "Flujo Mínimo", value: `${estadisticas.flujo_minimo}%`, color: "#4ade80" },
+          { id: 4, label: "Eficiencia", value: `${estadisticas.eficiencia}%`, color: "#4ade80" },
+        ]);
+
+        // Simular datos de consumo energético basados en el flujo promedio
+        const consumoZonaA = estadisticas.flujo_promedio * 11.2;
+        const consumoZonaB = estadisticas.flujo_promedio * 11.5;
+        const consumoZonaC = estadisticas.flujo_promedio * 11.0;
+
+        setConsumptionData([
+          { id: 1, x: 30, y: 40, area: "Zona A", value: `${consumoZonaA.toFixed(2)} kWh` },
+          { id: 2, x: 50, y: 50, area: "Zona B", value: `${consumoZonaB.toFixed(2)} kWh` },
+          { id: 3, x: 70, y: 60, area: "Zona C", value: `${consumoZonaC.toFixed(2)} kWh` },
+        ]);
+
+        // Actualizar datos de rendimiento del sistema
+        setRendimientoData({
+          eficiencia: estadisticas.eficiencia,
+          flujoPromedio: estadisticas.flujo_promedio,
+          flujoMaximo: estadisticas.flujo_maximo,
+        });
+      }
+
+      if (historial) {
+        setTableData(historial.map(reg => ({
+          date: reg.timestamp,
+          pumpSpeed: reg.flujo,
+          pumpMax: estadisticas.flujo_maximo,
+          flowRate: estadisticas.flujo_promedio,
+          flowMax: estadisticas.flujo_maximo,
+          efficiency: `${estadisticas.eficiencia}%`,
+        })));
+      }
+
+      if (tendenciasData) {
+        setTendencias(tendenciasData);
+      }
+    };
+
+    fetchData();
+    const intervalId = setInterval(() => {
+        setCurrentDate(new Date().toLocaleString());
+      }, 1000);
+  
+      return () => clearInterval(intervalId);
+  }, []);
+
+  // Función para obtener los registros de la página actual (historial)
+  const getCurrentHistorial = () => {
+    const startIndex = (currentPageHistorial - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return tableData.slice(startIndex, endIndex);
+  };
+
+  // Función para obtener los registros de la página actual (tendencias)
+  const getCurrentTendencias = () => {
+    const startIndex = (currentPageTendencias - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return tendencias.slice(startIndex, endIndex);
+  };
+
+  // Función para cambiar de página (historial)
+  const handlePageChangeHistorial = (direction) => {
+    if (direction === "next" && currentPageHistorial < Math.ceil(tableData.length / itemsPerPage)) {
+      setCurrentPageHistorial(currentPageHistorial + 1);
+    } else if (direction === "prev" && currentPageHistorial > 1) {
+      setCurrentPageHistorial(currentPageHistorial - 1);
+    }
+  };
+
+  // Función para cambiar de página (tendencias)
+  const handlePageChangeTendencias = (direction) => {
+    if (direction === "next" && currentPageTendencias < Math.ceil(tendencias.length / itemsPerPage)) {
+      setCurrentPageTendencias(currentPageTendencias + 1);
+    } else if (direction === "prev" && currentPageTendencias > 1) {
+      setCurrentPageTendencias(currentPageTendencias - 1);
+    }
+  };
 
   return (
     <div className="dashboard-container">
@@ -36,20 +111,14 @@ const WaterManagementDashboard = () => {
       <header className="dashboard-header">
         <div className="header-left">
           <div className="logo"></div>
-          <h1>Dashboard</h1>
+          <h1>DeterFuga</h1>
         </div>
         <div className="header-right">
           <div className="date-selector">
             <span>{currentDate}</span>
-            <svg className="dropdown-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
           </div>
           <div className="system-selector">
             <span>{currentSystem}</span>
-            <svg className="dropdown-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
           </div>
         </div>
       </header>
@@ -70,11 +139,10 @@ const WaterManagementDashboard = () => {
 
         {/* Charts Section */}
         <div className="charts-grid">
-          {/* Consumption Map */}
+          {/* Consumo Energético Sistemas (kWh) */}
           <div className="chart-card">
             <h3 className="chart-title">Consumo Energético Sistemas (kWh)</h3>
             <div className="consumption-map">
-              {/* Simple representation of water distribution system */}
               <div className="map-container">
                 <svg viewBox="0 0 100 100" className="map-svg">
                   {/* Simple pipes */}
@@ -127,7 +195,7 @@ const WaterManagementDashboard = () => {
             </div>
           </div>
 
-          {/* Uptime Chart */}
+          {/* Rendimiento del Sistema */}
           <div className="chart-card">
             <h3 className="chart-title">Rendimiento del Sistema</h3>
             <div className="performance-chart">
@@ -161,7 +229,9 @@ const WaterManagementDashboard = () => {
                 
                 {/* Label para el punto */}
                 <rect x="65" y="5" width="15" height="8" rx="2" fill="#1e3a8a" />
-                <text x="72.5" y="10" fontSize="4" textAnchor="middle" fill="white" fontWeight="bold">99%</text>
+                <text x="72.5" y="10" fontSize="4" textAnchor="middle" fill="white" fontWeight="bold">
+                  {rendimientoData.eficiencia}%
+                </text>
                 <text x="72.5" y="3" fontSize="2" textAnchor="middle" fill="white">Mar 19</text>
                 
                 {/* Escala X - fechas */}
@@ -177,56 +247,90 @@ const WaterManagementDashboard = () => {
           </div>
         </div>
 
-        {/* Table */}
+        {/* Tabla de Historial de Flujo */}
         <div className="table-container">
+          <h3 className="table-title">Historial de Flujo</h3>
           <table className="data-table">
             <thead>
               <tr>
-                <th className="with-icon">
-                  Fecha
-                  <svg className="sort-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </th>
-                <th>
-                  Velocidad Bombeo
-                </th>
-                <th>
-                  Bombeo Máximo
-                </th>
-                <th className="with-icon">
-                  Flujo Promedio
-                  <svg className="sort-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </th>
-                <th className="with-icon">
-                  Flujo Máximo
-                  <svg className="sort-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </th>
-                <th className="with-icon">
-                  Eficiencia
-                  <svg className="sort-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </th>
+                <th>Fecha</th>
+                <th>Flujo</th>
+                <th>Bombeo Máximo</th>
+                <th>Flujo Máximo</th>
+                <th>Eficiencia</th>
               </tr>
             </thead>
             <tbody>
-              {tableData.map((row, index) => (
+              {getCurrentHistorial().map((row, index) => (
                 <tr key={index}>
                   <td className="date-cell">{row.date}</td>
                   <td>{row.pumpSpeed}</td>
                   <td>{row.pumpMax}</td>
-                  <td>{row.flowRate}</td>
                   <td>{row.flowMax}</td>
                   <td>{row.efficiency}</td>
                 </tr>
               ))}
             </tbody>
           </table>
+          {/* Botones de paginación */}
+          <div className="pagination-controls">
+            <button
+              onClick={() => handlePageChangeHistorial("prev")}
+              disabled={currentPageHistorial === 1}
+            >
+              Anterior
+            </button>
+            <span>Página {currentPageHistorial}</span>
+            <button
+              onClick={() => handlePageChangeHistorial("next")}
+              disabled={currentPageHistorial === Math.ceil(tableData.length / itemsPerPage)}
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
+
+        {/* Tabla de Tendencias */}
+        <div className="table-container">
+          <h3 className="table-title">Tendencias</h3>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Período</th>
+                <th>Tendencia</th>
+                <th>Recomendación</th>
+                <th>Probabilidad de Fuga</th>
+              </tr>
+            </thead>
+            <tbody>
+              {getCurrentTendencias().map((tendencia, index) => (
+                <tr key={index}>
+                  <td className="date-cell">{tendencia.fecha}</td>
+                  <td>{tendencia.periodo}</td>
+                  <td>{tendencia.tendencia}</td>
+                  <td>{tendencia.recomendacion}</td>
+                  <td>{tendencia.probabilidad_fuga}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {/* Botones de paginación */}
+          <div className="pagination-controls">
+            <button
+              onClick={() => handlePageChangeTendencias("prev")}
+              disabled={currentPageTendencias === 1}
+            >
+              Anterior
+            </button>
+            <span>Página {currentPageTendencias}</span>
+            <button
+              onClick={() => handlePageChangeTendencias("next")}
+              disabled={currentPageTendencias === Math.ceil(tendencias.length / itemsPerPage)}
+            >
+              Siguiente
+            </button>
+          </div>
         </div>
       </main>
     </div>
