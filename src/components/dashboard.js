@@ -3,19 +3,58 @@ import './WaterDashboard.css';
 import { getEstadisticas, getHistorial, getTendencias } from './Api'; // Asegúrate de que la ruta sea correcta
 
 const WaterManagementDashboard = () => {
-  const [currentDate, setCurrentDate ] = useState(new Date().toLocaleString());
+  const [currentDate, setCurrentDate] = useState(new Date().toLocaleString());
   const [currentSystem] = useState("Red de Distribución Zona Norte");
   const [metrics, setMetrics] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [tendencias, setTendencias] = useState([]);
   const [consumptionData, setConsumptionData] = useState([]);
   const [rendimientoData, setRendimientoData] = useState({});
+  const [alertas, setAlertas] = useState([]); // Estado para almacenar alertas
 
   // Estados para la paginación
   const [currentPageHistorial, setCurrentPageHistorial] = useState(1);
   const [currentPageTendencias, setCurrentPageTendencias] = useState(1);
   const itemsPerPage = 10; // Número de registros por página
 
+  // Conexión WebSocket para notificaciones en tiempo real
+  useEffect(() => {
+    const ws = new WebSocket('ws://localhost:8000/ws');
+
+    ws.onopen = () => {
+      console.log('Conectado al servidor WebSocket');
+    };
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.tipo === "alerta") {
+        setAlertas((prevAlertas) => [...prevAlertas, data.mensaje]);
+      }
+    };
+
+    ws.onclose = () => {
+      console.log('Desconectado del servidor WebSocket');
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, []);
+  // Función para cerrar una alerta
+  const cerrarAlerta = (id) => {
+    setAlertas((prevAlertas) =>
+      prevAlertas.map((alerta) =>
+        alerta.id === id ? { ...alerta, cerrando: true } : alerta
+      )
+    );
+
+    // Eliminar la alerta después de la animación
+    setTimeout(() => {
+      setAlertas((prevAlertas) => prevAlertas.filter((alerta) => alerta.id !== id));
+    }, 300); // Tiempo de la animación
+  };
+
+  // Obtener datos del backend
   useEffect(() => {
     const fetchData = async () => {
       const estadisticas = await getEstadisticas();
@@ -67,10 +106,10 @@ const WaterManagementDashboard = () => {
 
     fetchData();
     const intervalId = setInterval(() => {
-        setCurrentDate(new Date().toLocaleString());
-      }, 1000);
-  
-      return () => clearInterval(intervalId);
+      setCurrentDate(new Date().toLocaleString());
+    }, 1000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   // Función para obtener los registros de la página actual (historial)
@@ -107,6 +146,16 @@ const WaterManagementDashboard = () => {
 
   return (
     <div className="dashboard-container">
+      {/* Notificaciones de alerta */}
+      <div className="alertas-container">
+        {alertas.map((alerta) => (
+          <div key={alerta.id} className={`alerta ${alerta.cerrando ? 'cerrando' : ''}`}>
+            <span>⚠️ Alerta de fuga</span>
+            <button onClick={() => cerrarAlerta(alerta.id)}>×</button>
+          </div>
+        ))}
+      </div>
+
       {/* Header */}
       <header className="dashboard-header">
         <div className="header-left">
@@ -146,44 +195,44 @@ const WaterManagementDashboard = () => {
               <div className="map-container">
                 <svg viewBox="0 0 100 100" className="map-svg">
                   {/* Simple pipes */}
-                  <path d="M20,40 L50,30 L70,40 M50,30 L50,70 M50,70 L20,40 M50,70 L70,40" 
-                    stroke="#4ade80" 
-                    strokeWidth="1" 
+                  <path d="M20,40 L50,30 L70,40 M50,30 L50,70 M50,70 L20,40 M50,70 L70,40"
+                    stroke="#4ade80"
+                    strokeWidth="1"
                     fill="none" />
-                  
+
                   {/* Consumption points */}
                   {consumptionData.map((point) => (
                     <g key={point.id}>
-                      <circle 
-                        cx={point.x} 
-                        cy={point.y} 
-                        r={5} 
-                        fill="#4ade80" 
+                      <circle
+                        cx={point.x}
+                        cy={point.y}
+                        r={5}
+                        fill="#4ade80"
                       />
-                      <circle 
-                        cx={point.x} 
-                        cy={point.y} 
-                        r={10} 
+                      <circle
+                        cx={point.x}
+                        cy={point.y}
+                        r={10}
                         fill="transparent"
                         stroke="#4ade80"
                         strokeWidth="1"
                         opacity="0.5"
                       />
-                      <text 
-                        x={point.x} 
-                        y={point.y - 15} 
-                        textAnchor="middle" 
-                        fontSize="3" 
+                      <text
+                        x={point.x}
+                        y={point.y - 15}
+                        textAnchor="middle"
+                        fontSize="3"
                         fill="white"
                       >
                         {point.area}
                       </text>
-                      <text 
-                        x={point.x} 
-                        y={point.y - 10} 
-                        textAnchor="middle" 
-                        fontSize="4" 
-                        fill="white" 
+                      <text
+                        x={point.x}
+                        y={point.y - 10}
+                        textAnchor="middle"
+                        fontSize="4"
+                        fill="white"
                         fontWeight="bold"
                       >
                         {point.value}
@@ -206,34 +255,34 @@ const WaterManagementDashboard = () => {
                 <line x1="0" y1="25" x2="100" y2="25" stroke="#333" strokeWidth="0.5" />
                 <line x1="0" y1="37.5" x2="100" y2="37.5" stroke="#333" strokeWidth="0.5" />
                 <line x1="0" y1="50" x2="100" y2="50" stroke="#333" strokeWidth="0.5" />
-                
+
                 {/* Eficiencia - curva verde */}
-                <path 
+                <path
                   d="M0,25 C10,20 20,15 30,10 C40,5 50,15 60,20 C70,25 80,15 90,22 C95,25 100,20"
-                  stroke="#4ade80" 
-                  strokeWidth="1.5" 
-                  fill="none" 
+                  stroke="#4ade80"
+                  strokeWidth="1.5"
+                  fill="none"
                 />
-                
+
                 {/* Pérdidas de agua - curva amarilla */}
-                <path 
+                <path
                   d="M0,35 C10,30 20,35 30,25 C40,30 50,40 60,35 C70,30 80,25 90,35 C95,38 100,30"
-                  stroke="#eab308" 
-                  strokeWidth="1.5" 
-                  fill="none" 
+                  stroke="#eab308"
+                  strokeWidth="1.5"
+                  fill="none"
                 />
-                
+
                 {/* Punto destacado */}
                 <circle cx="70" cy="15" r="1.5" fill="#4ade80" />
                 <circle cx="70" cy="15" r="3" fill="transparent" stroke="#4ade80" />
-                
+
                 {/* Label para el punto */}
                 <rect x="65" y="5" width="15" height="8" rx="2" fill="#1e3a8a" />
                 <text x="72.5" y="10" fontSize="4" textAnchor="middle" fill="white" fontWeight="bold">
                   {rendimientoData.eficiencia}%
                 </text>
                 <text x="72.5" y="3" fontSize="2" textAnchor="middle" fill="white">Mar 19</text>
-                
+
                 {/* Escala X - fechas */}
                 <text x="5" y="55" fontSize="2" fill="#aaa">Mar 15</text>
                 <text x="20" y="55" fontSize="2" fill="#aaa">Mar 16</text>

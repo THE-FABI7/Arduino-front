@@ -302,3 +302,69 @@
   font-size: 14px;
   color: #333;
 }
+
+/* Estilos para el contenedor de alertas */
+.alertas-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Estilos para cada alerta */
+.alerta {
+  background-color: #ff4444; /* Rojo para alertas críticas */
+  color: white;
+  padding: 15px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: slideIn 0.5s ease-out;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Animación para mostrar la alerta */
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Estilos para el ícono de advertencia */
+.alerta svg {
+  width: 20px;
+  height: 20px;
+  fill: white;
+}
+
+/* Estilos para el botón de cerrar */
+.alerta button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+/* Efecto al pasar el mouse sobre la alerta */
+.alerta:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+/* Efecto al cerrar la alerta */
+.alerta.cerrando {
+  opacity: 0;
+  transform: translateX(100%);
+}
