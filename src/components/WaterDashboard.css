@@ -1,0 +1,207 @@
+/* WaterDashboard.css */
+
+/* Variables globales */
+:root {
+    --bg-color: #121212;
+    --card-bg: #1e1e1e;
+    --text-color: #ffffff;
+    --text-secondary: #a0a0a0;
+    --border-color: #333333;
+    --primary-color: #4ade80;
+    --secondary-color: #eab308;
+    --highlight-color: #60a5fa;
+  }
+  
+  /* Estilos generales */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+  }
+  
+  /* Contenedor principal */
+  .dashboard-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--bg-color);
+  }
+  
+  /* Cabecera */
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+  }
+  
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .date-selector, .system-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+  }
+  
+  .dropdown-icon {
+    width: 16px;
+    height: 16px;
+  }
+  
+  /* Contenido principal */
+  .dashboard-main {
+    flex: 1;
+    padding: 16px;
+    overflow: auto;
+  }
+  
+  /* Tarjetas de métricas */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  
+  @media (min-width: 768px) {
+    .metrics-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .metrics-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  
+  .metric-card {
+    background-color: var(--card-bg);
+    padding: 24px;
+    border-radius: 8px;
+  }
+  
+  .metric-value {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+  
+  .metric-label {
+    color: var(--text-secondary);
+  }
+  
+  /* Sección de gráficos */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  
+  @media (min-width: 768px) {
+    .charts-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  .chart-card {
+    background-color: var(--card-bg);
+    padding: 16px;
+    border-radius: 8px;
+  }
+  
+  .chart-title {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+  }
+  
+  .consumption-map, .performance-chart {
+    height: 256px;
+    background-color: var(--bg-color);
+    border-radius: 8px;
+    position: relative;
+  }
+  
+  .map-container, .chart-container {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .map-svg, .chart-svg {
+    width: 100%;
+    height: 100%;
+  }
+  
+  /* Tabla de datos */
+  .table-container {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .data-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .data-table td {
+    padding: 12px 16px;
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .date-cell {
+    color: var(--highlight-color);
+  }
+  
+  .with-icon {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .sort-icon {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+  }

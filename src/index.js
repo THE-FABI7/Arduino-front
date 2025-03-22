@@ -1,13 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
 import reportWebVitals from './reportWebVitals';
+import WaterManagementDashboard from './components/dashboard';
+import SidebarMenu from './components/sidebar';
+import MainLayout from './components/mainLayout';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+     <MainLayout/>
   </React.StrictMode>
 );
 
